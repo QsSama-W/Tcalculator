@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEMU报价计算器</title>
+    <link rel="icon" type="image/png" href="./static/icon/favicon.png">
+    <script src="./static/js/Tailwind_CSS.js"></script>
+    <script src="./static/js/tailwindcss.js"></script>
+    <link href="./static/css/font-awesome.min.css" rel="stylesheet">
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded transition-all duration-200;
+            }
+            .btn-secondary {
+                @apply bg-gray-200 hover:bg-gray-300 text-dark font-medium py-2 px-4 rounded transition-all duration-200;
+            }
+            .btn-success {
+                @apply bg-success hover:bg-success/90 text-white font-medium py-2 px-4 rounded transition-all duration-200;
+            }
+            .btn-info {  /* 新增信息蓝色按钮 */
+                @apply bg-info hover:bg-info/90 text-white font-medium py-2 px-4 rounded transition-all duration-200;
+            }
+            .btn-warning {  /* 新增警告橙色按钮 */
+                @apply bg-warning hover:bg-warning/90 text-white font-medium py-2 px-4 rounded transition-all duration-200;
+            }
+            .btn-radio {
+                @apply border border-gray-300 hover:border-primary transition-all duration-200;
+            }
+            .btn-radio.active {
+                @apply bg-primary text-white border-primary;
+            }
+            .card {
+                @apply bg-white rounded-lg shadow-md shadow-md p-4 transition-all duration-300 hover:shadow-lg;
+            }
+            .toast-message {
+                @apply fixed top-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out;
+            }
+            .toast-info {
+                @apply bg-white text-neutral border border-gray-200;
+            }
+            .toast-error {
+                @apply bg-red-50 text-red-500 border border-red-200;
+            }
+            .toast-hidden {
+                @apply translate-x-full opacity-0 pointer-events-none;
+            }
+            .toast-visible {
+                @apply translate-x-0 opacity-100;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-2">TEMU报价计算器</h1>
+        </header>
+
+        <!-- 主内容区 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 左侧：计算区域 -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- 单品抛货计算 -->
+                <div class="card">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-cube mr-2 text-primary"></i>单品抛货计算
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">尺寸1(cm)</label>
+                            <input type="number" id="size1" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">尺寸2(cm)</label>
+                            <input type="number" id="size2" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">尺寸3(cm)</label>
+                            <input type="number" id="size3" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">重量(g)</label>
+                            <input type="number" id="weight" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 价格与运费 -->
+                <div class="card">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-money mr-2 text-primary"></i>价格与运费
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1" id="labelSets">10套的售价</label>
+                            <input type="number" id="price" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1" id="labelShipping">10套采购运费</label>
+                            <input type="number" id="purchaseShipping" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">单件/套发出运费预估</label>
+                            <input type="number" id="estimatedShipping" step="0.01" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div class="flex items-end">
+                            <button id="adjustSets" class="w-full btn-warning flex items-center justify-center">
+                                <i class="fa fa-refresh mr-1"></i>调整件/套数
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 计算结果 -->
+                <div class="card">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-calculator mr-2 text-primary"></i>计算结果
+                    </h2>
+                    
+                    <!-- 倍数计算 -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">成本</label>
+                            <input type="text" id="cost" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">×1.7倍</label>
+                            <input type="text" id="multiple160" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">×1.5倍</label>
+                            <input type="text" id="multiple140" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">×1.4倍</label>
+                            <input type="text" id="multiple130" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <!-- 平台报价 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">平台报价</label>
+                            <input type="number" id="platformPrice" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">平台报价利润</label>
+                            <input type="text" id="platformProfit" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">平台报价利润率</label>
+                            <input type="text" id="platformProfitRate" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <!-- 建议报价 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">建议报价</label>
+                            <input type="text" id="suggestedPrice" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">建议报价利润</label>
+                            <input type="text" id="suggestedProfit" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">建议报价利润率</label>
+                            <input type="text" id="suggestedProfitRate" readonly class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 按钮 -->
+                <div class="flex flex-wrap gap-4">
+                    <button id="calculateBtn" class="btn-primary flex items-center">
+                        <i class="fa fa-calculator mr-2"></i>计算
+                    </button>
+                    <button id="copyBtn" class="btn-info flex items-center">
+                        <i class="fa fa-copy mr-2"></i>复制建议报价
+                    </button>
+                    <button id="resetBtn" class="btn-success flex items-center">
+                        <i class="fa fa-refresh mr-2"></i>初始化
+                    </button>
+                    <a href="https://github.com/QsSama-W/temu-calculator" target="_blank" class="btn-secondary flex items-center">
+                        <i class="fa fa-github fa-lg mr-2"></i>项目地址
+                    </a>
+                    <!-- <a href="https://seller.kuajingmaihuo.com/" target="_blank" class="btn-secondary flex items-center">
+                        <i class="fa fa-external-link mr-2"></i>TEMU后台
+                    </a> -->
+                </div>
+            </div>
+            
+            <!-- 右侧：菜鸟运费模板设置 -->
+            <div class="lg:col-span-1">
+                <div class="card sticky top-4">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-truck mr-2 text-primary"></i>菜鸟运费模板设置
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">重量1</label>
+                            <input type="number" id="kg1" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">重量2</label>
+                            <input type="number" id="kg2" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">重量3</label>
+                            <input type="number" id="kg3" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">重量4</label>
+                            <input type="number" id="kg4" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">续重</label>
+                            <input type="number" id="xzkg" step="0.01" class="w-full border border-gray-300 rounded px-3 py-2 input-focus">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-neutral mb-1">进制</label>
+                            <input type="number" id="jinzhi" value="1" readonly class="w-full mt-2 bg-gray-100 border border-gray-300 rounded px-3 py-2">
+                            
+                            <!-- 新增的进制切换按钮 -->
+                            <div class="flex gap-2 mt-2">
+                                <button id="jinzhi1" class="btn-radio active py-1 px-3 rounded text-sm">1kg</button>
+                                <button id="jinzhi05" class="btn-radio py-1 px-3 rounded text-sm">0.5kg</button>
+                                <button id="jinzhi03" class="btn-radio py-1 px-3 rounded text-sm">0.3kg</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2 pt-2">
+                            <button id="saveSettings" class="flex-1 btn-primary">
+                                <i class="fa fa-save mr-1"></i>保存运费模板
+                            </button>
+                            <button id="defaultSettings" class="flex-1 btn-success">
+                                <i class="fa fa-database mr-1"></i>初始运费模板
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 悬浮状态消息框 -->
+        <div id="statusMessage" class="toast-message toast-info toast-hidden flex items-center">
+            <i id="statusIcon" class="fa fa-info-circle mr-2"></i>
+            <span id="statusText"></span>
+        </div>
+    </div>
+
+    <script src="./static/js/index.js"></script>
+</body>
+</html>
